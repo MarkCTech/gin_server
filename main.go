@@ -19,21 +19,15 @@ var todos = []todo{
 	{ID: "3", Item: "Sleep", Completed: false},
 }
 
-func getTodos(context *gin.Context) {
+func getTodos(context *gin.Context) { //Get all array endpoints
+	r := len(todos)
+	if r == 0 {
+		context.IndentedJSON(http.StatusNotFound, gin.H{"Message": "No todos found"})
+	}
 	context.IndentedJSON(http.StatusOK, todos)
 }
 
-func addTodo(context *gin.Context) {
-	var newTodo todo
-
-	if err := context.BindJSON(&newTodo); err != nil {
-		return
-	}
-	todos = append(todos, newTodo)
-	context.IndentedJSON(http.StatusCreated, newTodo)
-}
-
-func getTodo(context *gin.Context) {
+func getTodo(context *gin.Context) { //Get single endpoint
 	id := context.Param("id")
 	todo, err := getTodoById(id)
 	if err != nil {
@@ -43,7 +37,17 @@ func getTodo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
-func toggleTodoStatus(context *gin.Context) {
+func addTodo(context *gin.Context) { //Add single endpoint
+	var newTodo todo
+
+	if err := context.BindJSON(&newTodo); err != nil {
+		return
+	}
+	todos = append(todos, newTodo)
+	context.IndentedJSON(http.StatusCreated, newTodo)
+}
+
+func toggleTodoStatus(context *gin.Context) { //Toggle completedness
 	id := context.Param("id")
 	todo, err := getTodoById(id)
 	if err != nil {
@@ -54,7 +58,7 @@ func toggleTodoStatus(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
-func getTodoById(id string) (*todo, error) {
+func getTodoById(id string) (*todo, error) { //Search for specific todo by ID
 	for i, t := range todos {
 		if t.ID == id {
 			return &todos[i], nil
