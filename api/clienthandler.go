@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Angular must build into this same directory!!!
+// Angular must build into directory this imports into!!!
 
 //go:embed static/*
 var staticFS embed.FS
