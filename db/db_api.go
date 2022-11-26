@@ -1,4 +1,4 @@
-package main
+package db_api
 
 import (
 	"errors"
@@ -65,13 +65,4 @@ func getTodoById(id string) (*todo, error) { //Search for specific todo by ID
 		}
 	}
 	return nil, errors.New("todo not found")
-}
-
-func main() {
-	router := gin.Default()
-	router.GET("/todos", getTodos)
-	router.GET("/todos/:id", getTodo)
-	router.PATCH("/todos/:id", toggleTodoStatus)
-	router.POST("/todos", addTodo)
-	router.Run("localhost:9090")
 }
