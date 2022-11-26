@@ -11,9 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Angular must build into directory this imports into!!!
-
-//go:embed static/*
+// Static Front-end must be built into same Dir as this import and go:embed !!!
 var staticFS embed.FS
 
 // AddRoutes serves the static file system for the Angular Web App.
