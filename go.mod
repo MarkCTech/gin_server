@@ -2,13 +2,13 @@ module github.com/martoranam/gin_api
 
 go 1.19
 
-require github.com/gin-gonic/gin v1.8.1
-require github.com/martoranam/gin_api/db_api
-require github.com/martoranam/gin_api/clienthandler v0.1.0
+require (
+	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
+	github.com/gin-gonic/gin v1.8.1
+)
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
