@@ -1,4 +1,4 @@
-package api
+package gin_api
 
 import (
 	"embed"

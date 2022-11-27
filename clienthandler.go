@@ -1,25 +1,42 @@
-package api
+package gin_api
 
 import (
-	"embed"
 	"fmt"
 	"io/fs"
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
-// Static Front-end must be built into same Dir as this import and go:embed !!!
-var staticFS embed.FS
+var InputApp *App
 
+// Static Front-end must be built into same Dir as this import and go:embed !!!
 // AddRoutes serves the static file system for the Angular Web App.
-func AddStaticRoutes(router gin.IRouter) {
+func AddStaticRoutes() {
 	embeddedBuildFolder := newStaticFileSystem()
 	fallbackFileSystem := newFallbackFileSystem(embeddedBuildFolder)
-	router.Use(static.Serve("/", embeddedBuildFolder))
-	router.Use(static.Serve("/", fallbackFileSystem))
+	InputApp.Router.Use(Serve("/", embeddedBuildFolder))
+	InputApp.Router.Use(Serve("/", fallbackFileSystem))
+}
+
+type ServeFileSystem interface {
+	http.FileSystem
+	Exists(prefix string, path string) bool
+}
+
+// Static returns a middleware handler that serves static files in the given directory.
+func Serve(urlPrefix string, fs ServeFileSystem) gin.HandlerFunc {
+	fileserver := http.FileServer(fs)
+	if urlPrefix != "" {
+		fileserver = http.StripPrefix(urlPrefix, fileserver)
+	}
+	return func(c *gin.Context) {
+		if fs.Exists(urlPrefix, c.Request.URL.Path) {
+			fileserver.ServeHTTP(c.Writer, c.Request)
+			c.Abort()
+		}
+	}
 }
 
 // staticFileSystem serves files out of the embedded build folder
@@ -27,10 +44,10 @@ type staticFileSystem struct {
 	http.FileSystem
 }
 
-var _ static.ServeFileSystem = (*staticFileSystem)(nil)
+var _ ServeFileSystem = (*staticFileSystem)(nil)
 
 func newStaticFileSystem() *staticFileSystem {
-	sub, err := fs.Sub(staticFS, "static")
+	sub, err := fs.Sub(InputApp.StaticFS, "static")
 
 	if err != nil {
 		panic(err)
@@ -46,12 +63,12 @@ func (s *staticFileSystem) Exists(prefix string, path string) bool {
 
 	// support for folders
 	if strings.HasSuffix(path, "/") {
-		_, err := staticFS.ReadDir(strings.TrimSuffix(buildpath, "/"))
+		_, err := InputApp.StaticFS.ReadDir(strings.TrimSuffix(buildpath, "/"))
 		return err == nil
 	}
 
 	// support for files
-	f, err := staticFS.Open(buildpath)
+	f, err := InputApp.StaticFS.Open(buildpath)
 	if f != nil {
 		_ = f.Close()
 	}
@@ -63,7 +80,7 @@ type fallbackFileSystem struct {
 	staticFileSystem *staticFileSystem
 }
 
-var _ static.ServeFileSystem = (*fallbackFileSystem)(nil)
+var _ ServeFileSystem = (*fallbackFileSystem)(nil)
 var _ http.FileSystem = (*fallbackFileSystem)(nil)
 
 func newFallbackFileSystem(staticFileSystem *staticFileSystem) *fallbackFileSystem {
